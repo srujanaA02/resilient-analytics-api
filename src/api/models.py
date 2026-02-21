@@ -4,7 +4,21 @@ from typing import Optional, List
 
 
 class MetricRequest(BaseModel):
-    """Request model for creating a metric."""
+    """
+    Request model for submitting metrics to the API.
+    
+    Validates and serializes input metrics with the following constraints:
+    - timestamp: Must be valid ISO 8601 format
+    - value: Numeric metric value (float)
+    - type: Metric type identifier (1-100 characters)
+    
+    Example JSON:
+        {
+            "timestamp": "2026-02-21T12:00:00Z",
+            "value": 75.5,
+            "type": "cpu_usage"
+        }
+    """
 
     timestamp: datetime = Field(..., description="ISO 8601 timestamp")
     value: float = Field(..., description="Numeric metric value")
@@ -21,7 +35,12 @@ class MetricRequest(BaseModel):
 
 
 class MetricResponse(BaseModel):
-    """Response model for a single metric."""
+    """
+    Response model for a single metric.
+    
+    Returned when querying individual metrics or after metric submission.
+    Contains metric data with optional ID if persisted.
+    """
 
     id: Optional[str] = None
     timestamp: datetime
