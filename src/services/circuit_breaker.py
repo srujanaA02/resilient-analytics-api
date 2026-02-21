@@ -47,9 +47,6 @@ class CircuitBreaker:
         except CircuitBreakerOpenError:
             # Use fallback logic
     """
-    - OPEN: Requests immediately fail with fallback response
-    - HALF_OPEN: One test request allowed to check if service recovered
-    """
 
     def __init__(
         self,
