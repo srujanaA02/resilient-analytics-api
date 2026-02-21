@@ -1,0 +1,45 @@
+import redis.asyncio as redis
+import logging
+from typing import Optional
+from src.config.settings import settings
+
+logger = logging.getLogger(__name__)
+
+
+class RedisClient:
+    """Manages Redis connection pooling."""
+
+    _instance: Optional[redis.Redis] = None
+
+    @classmethod
+    async def initialize(cls) -> redis.Redis:
+        """Initialize Redis connection pool."""
+        if cls._instance is None:
+            try:
+                cls._instance = await redis.from_url(
+                    f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
+                    encoding="utf-8",
+                    decode_responses=True,
+                    health_check_interval=30,
+                )
+                await cls._instance.ping()
+                logger.info("Redis connection established successfully")
+            except Exception as e:
+                logger.error(f"Failed to connect to Redis: {e}")
+                raise
+        return cls._instance
+
+    @classmethod
+    async def get(cls) -> redis.Redis:
+        """Get Redis connection instance."""
+        if cls._instance is None:
+            await cls.initialize()
+        return cls._instance
+
+    @classmethod
+    async def close(cls):
+        """Close Redis connection."""
+        if cls._instance is not None:
+            await cls._instance.close()
+            cls._instance = None
+            logger.info("Redis connection closed")
