@@ -11,7 +11,22 @@ _simulated_failure_rate = settings.EXTERNAL_SERVICE_FAILURE_RATE
 
 
 def set_failure_rate(rate: float) -> None:
-    """Set the simulated failure rate for testing (0.0 to 1.0)."""
+    """
+    Set the simulated failure rate for testing purposes.
+    
+    Used to inject failures and test circuit breaker behavior without
+    requiring actual external service failures. Useful for resilience testing.
+    
+    Args:
+        rate: Failure rate as decimal between 0.0 (never fails) and 1.0 (always fails)
+        
+    Raises:
+        ValueError: If rate is not between 0.0 and 1.0
+        
+    Example:
+        set_failure_rate(0.3)  # 30% of requests will fail
+        set_failure_rate(0.0)  # All requests succeed (reset to none)
+    """
     global _simulated_failure_rate
     if not (0 <= rate <= 1.0):
         raise ValueError("Failure rate must be between 0.0 and 1.0")
