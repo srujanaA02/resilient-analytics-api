@@ -25,9 +25,28 @@ class CircuitBreakerOpenError(Exception):
 class CircuitBreaker:
     """
     Circuit breaker pattern implementation for fault tolerance.
-
+    
+    Prevents cascade failures by monitoring service health and stopping
+    requests when service is unhealthy. Implements three-state machine:
+    
     States:
-    - CLOSED: Requests pass through normally
+    - CLOSED: Normal operation, requests pass through
+    - OPEN: Service unhealthy, requests fail immediately
+    - HALF_OPEN: Recovery mode, test requests allowed
+    
+    Transitions:
+    - CLOSED → OPEN: After consecutive failures exceed threshold
+    - OPEN → HALF_OPEN: After timeout expires
+    - HALF_OPEN → CLOSED: After successful recovery threshold
+    - HALF_OPEN → OPEN: After failures in recovery mode
+    
+    Example:
+        cb = CircuitBreaker(failure_threshold=5, recovery_timeout=60)
+        try:
+            result = await cb.call(external_service_call)
+        except CircuitBreakerOpenError:
+            # Use fallback logic
+    """
     - OPEN: Requests immediately fail with fallback response
     - HALF_OPEN: One test request allowed to check if service recovered
     """
