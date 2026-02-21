@@ -8,16 +8,44 @@ logger = logging.getLogger(__name__)
 
 
 class CacheService:
-    """Redis-backed caching service with TTL support."""
+    """
+    Redis-backed caching service with TTL (Time To Live) support.
+    
+    Implements read-through cache pattern with atomic operations.
+    Provides methods for get, set, delete, and pattern-based operations.
+    
+    Example:
+        cache = CacheService(redis_client, default_ttl_seconds=300)
+        data = await cache.get_or_set("user:123", fetch_user, 123)
+    """
 
     def __init__(
         self, redis_client: redis.Redis, default_ttl_seconds: int = settings.CACHE_TTL_SECONDS
     ):
+        """
+        Initialize cache service.
+        
+        Args:
+            redis_client: Async Redis client instance
+            default_ttl_seconds: Default TTL for cached items (default: 300)
+        """
         self.redis = redis_client
         self.default_ttl_seconds = default_ttl_seconds
 
     async def get(self, key: str) -> Optional[Any]:
-        """Get value from cache."""
+        """
+        Retrieve value from cache.
+        
+        Args:
+            key: Cache key to retrieve
+            
+        Returns:
+            Cached value or None if key doesn't exist or is expired
+            
+        Raises:
+            json.JSONDecodeError: If cached value is invalid JSON
+            redis.ConnectionError: If Redis connection fails
+        """
         try:
             cached_data = await self.redis.get(key)
             if cached_data:
